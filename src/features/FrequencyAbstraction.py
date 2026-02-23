@@ -1,14 +1,3 @@
-##############################################################
-#                                                            #
-#    Mark Hoogendoorn and Burkhardt Funk (2017)              #
-#    Machine Learning for the Quantified Self                #
-#    Springer                                                #
-#    Chapter 4                                               #
-#                                                            #
-##############################################################
-
-# Updated by Dave Ebbelaar on 06-01-2023
-
 import numpy as np
 
 
@@ -16,18 +5,12 @@ import numpy as np
 # often and filter noise.
 class FourierTransformation:
 
-    # Find the amplitudes of the different frequencies using a fast fourier transformation. Here,
-    # the sampling rate expresses the number of samples per second (i.e. Frequency is Hertz of the dataset).
     def find_fft_transformation(self, data, sampling_rate):
-        # Create the transformation, this includes the amplitudes of both the real
-        # and imaginary part.
         transformation = np.fft.rfft(data, len(data))
         return transformation.real, transformation.imag
 
-    # Get frequencies over a certain window.
     def abstract_frequency(self, data_table, cols, window_size, sampling_rate):
 
-        # Create new columns for the frequency data.
         freqs = np.round((np.fft.rfftfreq(int(window_size)) * sampling_rate), 3)
 
         for col in cols:
@@ -39,8 +22,6 @@ class FourierTransformation:
                     col + "_freq_" + str(freq) + "_Hz_ws_" + str(window_size)
                 ] = np.nan
 
-        # Pass over the dataset (we cannot compute it when we do not have enough history)
-        # and compute the values.
         for i in range(window_size, len(data_table.index)):
             for col in cols:
                 real_ampl, imag_ampl = self.find_fft_transformation(
@@ -49,12 +30,10 @@ class FourierTransformation:
                     ],
                     sampling_rate,
                 )
-                # We only look at the real part in this implementation.
                 for j in range(0, len(freqs)):
                     data_table.loc[
                         i, col + "_freq_" + str(freqs[j]) + "_Hz_ws_" + str(window_size)
                     ] = real_ampl[j]
-                # And select the dominant frequency. We only consider the positive frequencies for now.
 
                 data_table.loc[i, col + "_max_freq"] = freqs[
                     np.argmax(real_ampl[0 : len(real_ampl)])
